@@ -1,0 +1,37 @@
+name: Bump Formula
+
+on:
+  # Schedule to run at 4AM and 4PM PST everyday
+  schedule:
+    - cron: "0 2,14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-formula:
+    name: Bump Homebrew Formula
+    runs-on: ubuntu-latest
+    steps:
+      - name: Homebrew Bump Formula (LanikSJ)
+        uses: LanikSJ/homebrew-bump-formula@1.1.1
+        with:
+          # Authentication token to use for pushing changes; use the built-in
+          # GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
+          token: ${{ secrets.HOMEBREW_TOKEN }}
+          user_name: ${{ github.actor }}
+          user_email: ${{ github.actor }}@users.noreply.github.com
+          # Push the bump branch directly to this repo and open the PR here,
+          # instead of forking. The built-in GITHUB_TOKEN cannot create forks
+          # ("Resource not accessible by integration"); --no-fork avoids that.
+          no_fork: true
+          # Force: delete any stale bump branch from a prior run before
+          # recreating it, and skip the duplicate-PR check.
+          force: true
+          # Bump all outdated casks in this tap
+          tap: leeron/dedeprecated
+          # Bump only these formulae if outdated
+          # formula: fop-rs, lsusb-plus
+          livecheck: true
