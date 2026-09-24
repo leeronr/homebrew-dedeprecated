@@ -29,6 +29,7 @@ jobs:
           tap: leeronr/homebrew-dedeprecated
           # Bump only these casks if outdated
           # cask: chromedriver, vlc@nightly, xld
+          force: true
           no_fork: true
           livecheck: true
           dryrun: false
