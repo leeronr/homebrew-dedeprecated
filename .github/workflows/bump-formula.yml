@@ -4,6 +4,9 @@ on:
   # Schedule to run at 4AM and 4PM PST everyday
   schedule:
     - cron: "0 2,14 * * *"
+  push:
+    paths:
+      - ".github/workflows/bump-formula.yml"
   workflow_dispatch:
 
 permissions:
@@ -13,7 +16,7 @@ permissions:
 jobs:
   bump-formula:
     name: Bump Homebrew Formula
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Homebrew Bump Formula (LanikSJ)
         uses: LanikSJ/homebrew-bump-formula@1.1.1
