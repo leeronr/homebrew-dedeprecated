@@ -34,7 +34,7 @@ jobs:
           # recreating it, and skip the duplicate-PR check.
           force: true
           # Bump all outdated casks in this tap
-          tap: leeron/dedeprecated
+          tap: leeronr/dedeprecated
           # Bump only these formulae if outdated
           # formula: fop-rs, lsusb-plus
           livecheck: true
