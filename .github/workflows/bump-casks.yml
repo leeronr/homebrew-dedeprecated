@@ -1,0 +1,33 @@
+name: Bump Casks
+
+on:
+  schedule:
+    # Time is UTC, so below is running everyday at 4AM and 4PM PST
+    - cron: "0 2,14 * * *"
+  push:
+    paths:
+      - ".github/workflows/bump-casks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-casks:
+    name: Bump Homebrew Cask
+    runs-on: macos-latest
+    steps:
+      - name: Homebrew Bump Cask (LanikSJ)
+        uses: LanikSJ/homebrew-bump-cask@v3 # v3
+        with:
+          # Authentication token to use for pushing changes; use the built-in GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
+          token: ${{ secrets.CASK_BUMP_TOKEN }}
+          user_name: ${{ github.actor }}
+          user_email: ${{ github.actor }}@users.noreply.github.com
+          # Bump all outdated casks in this tap
+          tap: leeronr/homebrew-dedeprecated
+          # Bump only these casks if outdated
+          # cask: chromedriver, vlc@nightly, xld
+          livecheck: true
+          dryrun: false
