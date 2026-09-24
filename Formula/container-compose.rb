@@ -20,8 +20,8 @@ class ContainerCompose < Formula
   # TODO: Can be undeprecated on official new release or if upstream confirms change
   # in upstream issue: https://github.com/Mcrich23/Container-Compose/issues/158
   # See: https://docs.brew.sh/Homebrew-homebrew-core-Maintainer-Guide#retagged-formulae
-  deprecate! date: "2026-09-18", because: :checksum_mismatch
-  disable! date: "2027-09-18", because: :checksum_mismatch
+  # deprecate! date: "2026-09-18", because: :checksum_mismatch
+  # disable! date: "2027-09-18", because: :checksum_mismatch
 
   depends_on xcode: ["26.0", :build]
   depends_on arch: :arm64
