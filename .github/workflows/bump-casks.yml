@@ -2,6 +2,7 @@ name: Bump Casks
 
 on:
   schedule:
+    # Time is UTC, so below is running everyday at 4AM and 4PM PST
     - cron: "0 2,14 * * *"
   push:
     paths:
@@ -13,118 +14,43 @@ permissions:
   pull-requests: write
 
 jobs:
-  bump:
-    name: Bump outdated casks
+  bump-casks:
+    name: Bump Homebrew Cask
     runs-on: macos-latest
-
+    outputs:
+      pr: ${{ steps.bump.outputs.pr }}
     steps:
-      - name: Update Homebrew
-        run: brew update
+      - name: Homebrew Bump Cask (LanikSJ)
+        id: bump
+        uses: LanikSJ/homebrew-bump-cask@v3 # v3
+        with:
+          # Authentication token to use for pushing changes; use the built-in GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
+          token: ${{ secrets.HOMEBREW_TOKEN }}
+          user_name: ${{ github.actor }}
+          user_email: ${{ github.actor }}@users.noreply.github.com
+          # Bump all outdated casks in this tap
+          tap: leeronr/homebrew-dedeprecated
+          # Bump only these casks if outdated
+          # cask: chromedriver, vlc@nightly, xld
+          no_fork: true
+          livecheck: true
+          dryrun: false
 
-      - name: Bump casks
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-        run: |
-          brew bump \
-            --cask \
-            --tap=leeronr/homebrew-dedeprecated \
-            --no-fork \
-            --open-pr
-
-  merge:
-    name: Auto-merge bump PRs
+  auto-merge:
+    name: Auto Merge PRs
     runs-on: ubuntu-latest
-    needs: bump
-
+    needs: bump-casks
+    if: ${{ needs.bump-casks.outputs.pr != '' }}
     permissions:
-      contents: write
       pull-requests: write
-
+      contents: write
     steps:
-      - name: Auto-merge Homebrew bump PRs
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Merge Pull Request
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+          PR_NUMBER: ${{ needs.bump-casks.outputs.pr }}
         run: |
-          set -euo pipefail
-
-          prs="$(
-            gh pr list \
-              --repo "${{ github.repository }}" \
-              --state open \
-              --search 'Created by `brew bump` in:body' \
-              --json number \
-              --jq '.[].number'
-          )"
-
-          if [[ -z "$prs" ]]; then
-            echo "No Homebrew bump PRs to merge."
-            exit 0
-          fi
-
-          while IFS= read -r pr; do
-            [[ -z "$pr" ]] && continue
-
-            echo "Enabling auto-merge for PR #$pr"
-
-            gh pr merge "$pr" \
-              --repo "${{ github.repository }}" \
-              --auto \
-              --squash \
-              --delete-branch
-          done <<< "$prs"
-# name: Bump Casks
-
-# on:
-#   schedule:
-#     # Time is UTC, so below is running everyday at 4AM and 4PM PST
-#     - cron: "0 2,14 * * *"
-#   push:
-#     paths:
-#       - ".github/workflows/bump-casks.yml"
-#   workflow_dispatch:
-
-# permissions:
-#   contents: write
-#   pull-requests: write
-
-# jobs:
-#   bump-casks:
-#     name: Bump Homebrew Cask
-#     runs-on: macos-latest
-#     outputs:
-#       pr: ${{ steps.bump.outputs.pr }}
-#     steps:
-#       - name: Homebrew Bump Cask (LanikSJ)
-#         id: bump
-#         uses: LanikSJ/homebrew-bump-cask@v3 # v3
-#         with:
-#           # Authentication token to use for pushing changes; use the built-in GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
-#           token: ${{ secrets.HOMEBREW_TOKEN }}
-#           user_name: ${{ github.actor }}
-#           user_email: ${{ github.actor }}@users.noreply.github.com
-#           # Bump all outdated casks in this tap
-#           tap: leeronr/homebrew-dedeprecated
-#           # Bump only these casks if outdated
-#           # cask: chromedriver, vlc@nightly, xld
-#           no_fork: true
-#           livecheck: true
-#           dryrun: false
-
-#   auto-merge:
-#     name: Auto Merge PRs
-#     runs-on: ubuntu-latest
-#     needs: bump-casks
-#     if: ${{ needs.bump-casks.outputs.pr != '' }}
-#     permissions:
-#       pull-requests: write
-#       contents: write
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Merge Pull Request
-#         env:
-#           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-#           PR_NUMBER: ${{ needs.bump-casks.outputs.pr }}
-#         run: |
-#           gh pr merge $PR_NUMBER --auto --squash --delete-branch
+          gh pr merge $PR_NUMBER --auto --squash --delete-branch
