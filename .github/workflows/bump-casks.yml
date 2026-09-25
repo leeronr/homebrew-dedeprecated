@@ -32,6 +32,8 @@ jobs:
 
           TAP="leeronr/dedeprecated"
 
+          brew trust -tap $TAP
+
           echo "Checking casks in $TAP..."
 
           # Get the casks belonging to our tap.
