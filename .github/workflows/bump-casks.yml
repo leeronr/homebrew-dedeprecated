@@ -2,7 +2,7 @@ name: Bump Casks
 
 on:
   schedule:
-    # Time is UTC, so below is running everyday at 4AM and 4PM PST
+    # 02:00 and 14:00 UTC
     - cron: "0 2,14 * * *"
   push:
     paths:
@@ -15,42 +15,234 @@ permissions:
 
 jobs:
   bump-casks:
-    name: Bump Homebrew Cask
+    name: Bump Homebrew Casks
     runs-on: macos-latest
-    outputs:
-      pr: ${{ steps.bump.outputs.pr }}
+
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+
     steps:
-      - name: Homebrew Bump Cask (LanikSJ)
-        id: bump
-        uses: LanikSJ/homebrew-bump-cask@v3 # v3
-        with:
-          # Authentication token to use for pushing changes; use the built-in GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
-          token: ${{ secrets.HOMEBREW_TOKEN }}
-          user_name: ${{ github.actor }}
-          user_email: ${{ github.actor }}@users.noreply.github.com
-          # Bump all outdated casks in this tap
-          tap: leeronr/homebrew-dedeprecated
-          # Bump only these casks if outdated
-          # cask: chromedriver, vlc@nightly, xld
-          no_fork: true
-          livecheck: true
-          dryrun: false
+      - name: Update Homebrew
+        run: brew update
+
+      - name: Find and bump outdated casks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAP="leeronr/dedeprecated"
+
+          echo "Checking casks in $TAP..."
+
+          # Get the casks belonging to our tap.
+          casks="$(
+            brew tap-info --json "$TAP" |
+              jq -r '.[0].cask_files[]?' |
+              sed -E 's#.*/([^/]+)\.rb$#\1#' |
+              sort -u
+          )"
+
+          if [[ -z "$casks" ]]; then
+            echo "No casks found in $TAP."
+            exit 0
+          fi
+
+          while IFS= read -r cask; do
+            [[ -z "$cask" ]] && continue
+
+            full_name="$TAP/$cask"
+
+            echo
+            echo "========================================"
+            echo "Checking $full_name"
+            echo "========================================"
+
+            # Ask Homebrew's native bump implementation to perform
+            # livecheck and, importantly, simulate ARM + Intel.
+            output="$(
+              brew bump \
+                --cask \
+                --no-pull-requests \
+                "$full_name" 2>&1
+            )" || {
+              echo "$output"
+              echo "::warning::brew bump failed for $full_name"
+              continue
+            }
+
+            echo "$output"
+
+            # Extract the "Latest livecheck version" section.
+            latest="$(
+              printf '%s\n' "$output" |
+                sed -n '/^Latest livecheck version:/,/^$/p'
+            )"
+
+            if [[ -z "$latest" ]]; then
+              echo "No livecheck result for $full_name."
+              continue
+            fi
+
+            # Architecture-specific result:
+            #
+            #   Latest livecheck version: arm:   VERSION
+            #                             intel: VERSION
+            #
+            # General result:
+            #
+            #   Latest livecheck version: VERSION
+            #
+            arm_version="$(
+              printf '%s\n' "$latest" |
+                sed -n 's/.*arm:[[:space:]]*//p' |
+                head -n 1
+            )"
+
+            intel_version="$(
+              printf '%s\n' "$latest" |
+                sed -n 's/.*intel:[[:space:]]*//p' |
+                head -n 1
+            )"
+
+            general_version="$(
+              printf '%s\n' "$latest" |
+                sed -n 's/^Latest livecheck version:[[:space:]]*//p' |
+                head -n 1
+            )"
+
+            if [[ -n "$arm_version" && -n "$intel_version" ]]; then
+              echo "Livecheck ARM:   $arm_version"
+              echo "Livecheck Intel: $intel_version"
+
+              # The native brew bump code has already compared these
+              # against the current architecture-specific versions.
+              # Let bump-cask-pr perform the actual update.
+              brew bump-cask-pr \
+                --no-fork \
+                --no-browse \
+                --version-arm="$arm_version" \
+                --version-intel="$intel_version" \
+                "$full_name"
+
+            elif [[ -n "$general_version" ]]; then
+              echo "Livecheck: $general_version"
+
+              brew bump-cask-pr \
+                --no-fork \
+                --no-browse \
+                --version="$general_version" \
+                "$full_name"
+
+            else
+              echo "Could not parse livecheck result for $full_name."
+              echo "::warning::Skipping $full_name"
+            fi
+
+          done <<< "$casks"
 
   auto-merge:
-    name: Auto Merge PRs
+    name: Auto-merge Bump PRs
     runs-on: ubuntu-latest
     needs: bump-casks
-    if: ${{ needs.bump-casks.outputs.pr != '' }}
-    permissions:
-      pull-requests: write
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Merge Pull Request
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Auto-merge Homebrew bump PRs
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-          PR_NUMBER: ${{ needs.bump-casks.outputs.pr }}
         run: |
-          gh pr merge $PR_NUMBER --auto --squash --delete-branch
+          set -euo pipefail
+
+          prs="$(
+            gh pr list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --json number,title,body \
+              --jq '
+                .[]
+                | select(
+                    (.body // "") | contains("Created by `brew bump`")
+                  )
+                | .number
+              '
+          )"
+
+          if [[ -z "$prs" ]]; then
+            echo "No Homebrew bump PRs found."
+            exit 0
+          fi
+
+          echo "Homebrew bump PRs:"
+          echo "$prs"
+
+          while IFS= read -r pr; do
+            [[ -z "$pr" ]] && continue
+
+            echo "Enabling auto-merge for PR #$pr"
+
+            gh pr merge "$pr" \
+              --repo "${{ github.repository }}" \
+              --auto \
+              --squash \
+              --delete-branch
+          done <<< "$prs"
+
+# name: Bump Casks
+
+# on:
+#   schedule:
+#     # Time is UTC, so below is running everyday at 4AM and 4PM PST
+#     - cron: "0 2,14 * * *"
+#   push:
+#     paths:
+#       - ".github/workflows/bump-casks.yml"
+#   workflow_dispatch:
+
+# permissions:
+#   contents: write
+#   pull-requests: write
+
+# jobs:
+#   bump-casks:
+#     name: Bump Homebrew Cask
+#     runs-on: macos-latest
+#     outputs:
+#       pr: ${{ steps.bump.outputs.pr }}
+#     steps:
+#       - name: Homebrew Bump Cask (LanikSJ)
+#         id: bump
+#         uses: LanikSJ/homebrew-bump-cask@v3 # v3
+#         with:
+#           # Authentication token to use for pushing changes; use the built-in GITHUB_TOKEN or define a HOMEBREW_TOKEN secret
+#           token: ${{ secrets.HOMEBREW_TOKEN }}
+#           user_name: ${{ github.actor }}
+#           user_email: ${{ github.actor }}@users.noreply.github.com
+#           # Bump all outdated casks in this tap
+#           tap: leeronr/homebrew-dedeprecated
+#           # Bump only these casks if outdated
+#           # cask: chromedriver, vlc@nightly, xld
+#           no_fork: true
+#           livecheck: true
+#           dryrun: false
+
+#   auto-merge:
+#     name: Auto Merge PRs
+#     runs-on: ubuntu-latest
+#     needs: bump-casks
+#     if: ${{ needs.bump-casks.outputs.pr != '' }}
+#     permissions:
+#       pull-requests: write
+#       contents: write
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Merge Pull Request
+#         env:
+#           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+#           PR_NUMBER: ${{ needs.bump-casks.outputs.pr }}
+#         run: |
+#           gh pr merge $PR_NUMBER --auto --squash --delete-branch
