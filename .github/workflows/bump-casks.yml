@@ -32,7 +32,8 @@ jobs:
 
           TAP="leeronr/dedeprecated"
 
-          brew trust -tap $TAP
+          brew tap $TAP
+          brew trust $TAP
 
           echo "Checking casks in $TAP..."
 
