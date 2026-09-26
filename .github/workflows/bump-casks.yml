@@ -3,9 +3,6 @@ name: Bump Casks
 on:
   schedule:
     - cron: "0 2,14 * * *"
-  push:
-    paths:
-      - ".github/workflows/bump-casks.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,29 +13,50 @@ jobs:
   bump-casks:
     runs-on: macos-latest
 
-    env:
-      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-
     steps:
-      - name: Update Homebrew
-        run: brew update
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Set up tap
+      - name: Configure Git
         run: |
-          brew tap leeronr/dedeprecated
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Fresh clone tap
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+        run: |
+          brew untap leeronr/dedeprecated 2>/dev/null || true
+
+          brew tap leeronr/dedeprecated \
+            https://github.com/leeronr/homebrew-dedeprecated.git
 
           TAP_PATH="$(brew --repository leeronr/dedeprecated)"
 
-          git -C "$TAP_PATH" remote set-url origin \
-            "https://x-access-token:${HOMEBREW_GITHUB_API_TOKEN}@github.com/leeronr/homebrew-dedeprecated.git"
+          echo "=== Tap path ==="
+          echo "$TAP_PATH"
 
-          echo "Tap:"
-          brew --repository leeronr/dedeprecated
-
-          echo "Remote:"
+          echo "=== Git remotes ==="
           git -C "$TAP_PATH" remote -v
 
+          echo "=== Push URL ==="
+          git -C "$TAP_PATH" remote get-url --push origin
+
+          echo "=== Homebrew tap remote ==="
+          brew tap-info leeronr/dedeprecated
+
+          EXPECTED="https://github.com/leeronr/homebrew-dedeprecated.git"
+          ACTUAL="$(git -C "$TAP_PATH" remote get-url --push origin)"
+
+          if [[ "$ACTUAL" != "$EXPECTED" ]]; then
+            echo "::error::Unexpected push URL: $ACTUAL"
+            exit 1
+          fi
+
       - name: Bump casks
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+          HOMEBREW_NO_INSTALL_FROM_API: "1"
         run: |
           brew bump \
             --no-fork \
@@ -46,27 +64,22 @@ jobs:
             --casks \
             --tap=leeronr/dedeprecated
 
-  auto-merge:
-    runs-on: ubuntu-latest
-    needs: bump-casks
-
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
       - name: Auto-merge bump PRs
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          set -euo pipefail
-
-          gh pr list \
+          prs="$(gh pr list \
             --repo "${{ github.repository }}" \
             --state open \
-            --search 'Created by `brew bump` in:body' \
-            --json number \
-            --jq '.[].number' |
+            --author "app/github-actions" \
+            --json number,title,body \
+            --jq '.[] | select(.body | contains("Created by `brew bump`")) | .number')"
+
+          if [[ -z "$prs" ]]; then
+            echo "No new bump PRs found."
+            exit 0
+          fi
+
           while IFS= read -r pr; do
             [[ -z "$pr" ]] && continue
 
@@ -77,7 +90,7 @@ jobs:
               --auto \
               --squash \
               --delete-branch
-          done
+          done <<< "$prs"
 # name: Bump Casks
 
 # on:
