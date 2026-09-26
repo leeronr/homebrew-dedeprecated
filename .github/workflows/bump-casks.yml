@@ -25,6 +25,10 @@ jobs:
       - name: Update Homebrew
         run: brew update
 
+      - name: Tap repository
+        run: |
+          brew tap leeronr/dedeprecated
+
       - name: Bump outdated casks
         run: |
           brew bump \
