@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
 
-echo "=== DEBUG ==="
-echo "BASH_VERSION=$BASH_VERSION"
-echo "BASH=$BASH"
-echo "PATH=$PATH"
-echo "brew=$(command -v brew)"
-echo "brew version:"
-brew --version
-echo "script=$0"
-echo "=== END DEBUG ==="
-
 declare -A version
 declare -A version_arm
 declare -A version_intel
@@ -18,10 +8,19 @@ package=
 skip=0
 multi=0
 
-echo "=== RAW BREW OUTPUT ==="
 brew_output=$(brew bump --tap leeronr/dedeprecated)
-printf '%s\n' "$brew_output"
-echo "=== END RAW BREW OUTPUT ==="
+
+while IFS= read -r line; do
+    if [[ $line == '==> '* ]]; then
+        printf 'PACKAGE MATCH: <%s>\n' "$line"
+    elif [[ $line == 'Latest livecheck version: arm:'* ]]; then
+        printf 'ARM MATCH: <%s>\n' "$line"
+    elif [[ $line == *'intel:'* ]]; then
+        printf 'INTEL MATCH: <%s>\n' "$line"
+    elif [[ $line == 'Latest livecheck version:'* ]]; then
+        printf 'SINGLE MATCH: <%s>\n' "$line"
+    fi
+done <<< "$brew_output"
 
 while IFS= read -r line; do
 
@@ -79,7 +78,6 @@ while IFS= read -r line; do
     fi
 
 done <<< "$brew_output"
-
 
 for package in "${!version[@]}"; do
 
