@@ -22,7 +22,7 @@ jobs:
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
       
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Tap repository
         env:
@@ -34,11 +34,10 @@ jobs:
         run: brew install bash
 
       - name: Bump casks
-        shell: /opt/homebrew/bin/bash {0}
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          /opt/homebrew/bin/bash .github/scripts/bump-casks.sh
+          /opt/homebrew/bin/bash "$GITHUB_WORKSPACE/.github/scripts/bump-casks.sh"
 
       - name: Enable auto-merge
         env:
