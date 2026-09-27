@@ -1,125 +1,14 @@
 #!/opt/homebrew/bin/bash
 
-printf 'DEBUG shell: bash=%q version=%q flags=%q\n' \
-    "$BASH" "$BASH_VERSION" "$-" 
-printf 'DEBUG script: %q\n' "$0"
-
-declare -A version
-declare -A version_arm
-declare -A version_intel
-
-package=
-skip=0
-multi=0
+echo "before brew"
 
 while IFS= read -r line; do
+    printf 'READ: <%s>\n' "$line"
+done < <(
+    brew bump --tap leeronr/dedeprecated |
+    tee /tmp/brew-bump-output
+)
 
-    # New package
-    if [[ $line == '==> '* ]]; then
-
-        # "==> foo is up to date!"
-        if [[ $line == *' is up to date!' ]]; then
-            package=
-            skip=1
-            multi=0
-            continue
-        fi
-
-        package=${line#==> }
-        skip=0
-        multi=0
-        continue
-    fi
-
-    (( skip )) && continue
-
-	# Don't try to populate an array with an empty key.
-  	[[ -z $package ]] && continue
-
-
-	if [[ $line == 'Latest livecheck version: arm:'* ]]; then
-    multi=1
-
-    value=${line#*arm:}
-    value=${value#"${value%%[![:space:]]*}"}
-
-    printf 'DEBUG ARM: package=<%q> value=<%q> multi=%q skip=%q line=<%q>\n' \
-        "$package" "$value" "$multi" "$skip" "$line"
-
-    version_arm["$package"]="$value"
-    continue
-	fi
-    # Latest version: ARM/Intel
-    if [[ $line == 'Latest livecheck version: arm:'* ]]; then
-        multi=1
-
-        value=${line#*arm:}
-        value=${value#"${value%%[![:space:]]*}"}
-
-        version_arm["$package"]="$value"
-        continue
-    fi
-
-    # Intel continuation
-    if (( multi )) && [[ $line == *'intel:'* ]]; then
-
-        value=${line#*intel:}
-        value=${value#"${value%%[![:space:]]*}"}
-
-        version_intel["$package"]="$value"
-        continue
-    fi
-
-    if [[ $line == 'Latest livecheck version:'* ]]; then
-    value=${line#Latest livecheck version:}
-    value=${value#"${value%%[![:space:]]*}"}
-
-    printf 'DEBUG single: package=<%q> value=<%q> multi=%q skip=%q line=<%q>\n' \
-        "$package" "$value" "$multi" "$skip" "$line"
-
-    version["$package"]="$value"
-    continue
-	fi
-	# Latest version: single version
-    if [[ $line == 'Latest livecheck version:'* ]]; then
-
-        value=${line#Latest livecheck version:}
-        value=${value#"${value%%[![:space:]]*}"}
-
-        version["$package"]="$value"
-        continue
-    fi
-
-done < <(brew bump --tap leeronr/dedeprecated)
-
-for package in "${!version[@]}"; do
-
-    echo "Bumping $package -> ${version[$package]}"
-
-    brew bump-cask-pr \
-        --no-fork \
-        --version "${version[$package]}" \
-        --dry-run \
-        "leeronr/dedeprecated/$package"
-
-done
-
-
-for package in "${!version_arm[@]}"; do
-
-    echo "Bumping $package:"
-    echo "  arm:   ${version_arm[$package]}"
-    echo "  intel: ${version_intel[$package]}"
-
-    brew bump-cask-pr \
-        --no-fork \
-        --no-browse \
-        --version-arm "${version_arm[$package]}" \
-        --version-intel "${version_intel[$package]}" \
-        --dry-run \
-        "leeronr/dedeprecated/$package"
-
-done
-
-printf 'DEBUG final shell: bash=%q version=%q flags=%q\n' \
-    "$BASH" "$BASH_VERSION" "$-"
+echo "after loop"
+echo "===== FILE ====="
+cat /tmp/brew-bump-output
