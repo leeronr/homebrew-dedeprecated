@@ -38,13 +38,13 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          echo ls -a .github/scripts
-          ls -a .github/scripts
+          # echo ls -a .github/scripts
+          # ls -a .github/scripts
           
-          echo "Bash: $BASH_VERSION"
-          echo "Path: $(command -v bash)"
+          # echo "Bash: $BASH_VERSION"
+          # echo "Path: $(command -v bash)"
           
-          bash "/.github/scripts/bump-casks.sh"
+          bash ".github/scripts/bump-casks.sh"
 
       - name: Enable auto-merge
         env:
