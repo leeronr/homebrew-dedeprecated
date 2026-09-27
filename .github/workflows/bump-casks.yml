@@ -28,6 +28,7 @@ jobs:
           brew tap leeronr/dedeprecated
 
       - name: Bump casks
+        shell: bash
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
