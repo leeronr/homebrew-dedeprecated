@@ -63,37 +63,34 @@ while IFS= read -r line; do
         continue
     fi
 
-done < <(brew bump --tap leeronr/dedeprecated)
-
-echo XXXXXXXXXXXXXXX
-echo "${!version_arm[@]}"
-echo XXXXXXXXXXXXXXX
-
-# for package in "${!version[@]}"; do
-
-#     echo "Bumping $package -> ${version[$package]}"
-
-#     brew bump-cask-pr \
-#         --no-fork \
-#         --version "${version[$package]}" \
-#         --dry-run \
-#         "leeronr/dedeprecated/$package"
-
-# done
+done < <(brew bump --tap leeronr/dedeprecated 2>&1)
 
 
-# for package in "${!version_arm[@]}"; do
+for package in "${!version[@]}"; do
 
-#     echo "Bumping $package:"
-#     echo "  arm:   ${version_arm[$package]}"
-#     echo "  intel: ${version_intel[$package]}"
+    echo "Bumping $package -> ${version[$package]}"
 
-#     brew bump-cask-pr \
-#         --no-fork \
-#         --no-browse \
-#         --version-arm "${version_arm[$package]}" \
-#         --version-intel "${version_intel[$package]}" \
-#         --dry-run \
-#         "leeronr/dedeprecated/$package"
+    brew bump-cask-pr \
+        --no-fork \
+        --version "${version[$package]}" \
+        --dry-run \
+        "leeronr/dedeprecated/$package"
 
-# done
+done
+
+
+for package in "${!version_arm[@]}"; do
+
+    echo "Bumping $package:"
+    echo "  arm:   ${version_arm[$package]}"
+    echo "  intel: ${version_intel[$package]}"
+
+    brew bump-cask-pr \
+        --no-fork \
+        --no-browse \
+        --version-arm "${version_arm[$package]}" \
+        --version-intel "${version_intel[$package]}" \
+        --dry-run \
+        "leeronr/dedeprecated/$package"
+
+done
