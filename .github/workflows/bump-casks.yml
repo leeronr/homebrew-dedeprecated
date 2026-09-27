@@ -38,10 +38,7 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          echo "Shell: $BASH_VERSION"
-          echo "bash: $(command -v bash)"
-          bash --version
-          # /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
+          /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
 
       - name: Enable auto-merge
         env:
