@@ -8,14 +8,6 @@ package=
 skip=0
 multi=0
 
-declare -A version
-declare -A version_arm
-declare -A version_intel
-
-package=
-skip=0
-multi=0
-
 while IFS= read -r line; do
 
     # New package
@@ -35,9 +27,10 @@ while IFS= read -r line; do
         continue
     fi
 
-    if (( skip )); then
-        continue
-    fi
+    (( skip )) && continue
+
+	# Don't try to populate an array with an empty key.
+  	[[ -z $package ]] && continue
 
     # Latest version: ARM/Intel
     if [[ $line == 'Latest livecheck version: arm:'* ]]; then
