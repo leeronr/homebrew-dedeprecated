@@ -34,10 +34,11 @@ jobs:
         run: brew install bash
 
       - name: Bump casks
-        shell: /opt/homebrew/bin/bash {0}
+        shell: sh
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-        run: .github/scripts/bump_casks.sh 
+        run: |
+          /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
 
       - name: Enable auto-merge
         env:
