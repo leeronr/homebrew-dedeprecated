@@ -29,6 +29,9 @@ while IFS= read -r line; do
 
     (( skip )) && continue
 
+	# Don't try to populate an array with an empty key.
+  	[[ -z $package ]] && continue
+
     # Latest version: ARM/Intel
     if [[ $line == 'Latest livecheck version: arm:'* ]]; then
         multi=1
