@@ -38,7 +38,12 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
+          brew bump --tap leeronr/dedeprecated > /tmp/brew.stdout 2> /tmp/brew.stderr
+          echo "=== STDOUT ==="
+          cat /tmp/brew.stdout
+          echo "=== STDERR ==="
+          cat /tmp/brew.stderr
+          # /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
 
       - name: Enable auto-merge
         env:
