@@ -1,4 +1,8 @@
-#!/usr/bin/env bash
+#!/opt/homebrew/bin/bash
+
+printf 'DEBUG shell: bash=%q version=%q flags=%q\n' \
+    "$BASH" "$BASH_VERSION" "$-" 
+printf 'DEBUG script: %q\n' "$0"
 
 declare -A version
 declare -A version_arm
@@ -32,6 +36,19 @@ while IFS= read -r line; do
 	# Don't try to populate an array with an empty key.
   	[[ -z $package ]] && continue
 
+
+	if [[ $line == 'Latest livecheck version: arm:'* ]]; then
+    multi=1
+
+    value=${line#*arm:}
+    value=${value#"${value%%[![:space:]]*}"}
+
+    printf 'DEBUG ARM: package=<%q> value=<%q> multi=%q skip=%q line=<%q>\n' \
+        "$package" "$value" "$multi" "$skip" "$line"
+
+    version_arm["$package"]="$value"
+    continue
+	fi
     # Latest version: ARM/Intel
     if [[ $line == 'Latest livecheck version: arm:'* ]]; then
         multi=1
@@ -53,7 +70,17 @@ while IFS= read -r line; do
         continue
     fi
 
-    # Latest version: single version
+    if [[ $line == 'Latest livecheck version:'* ]]; then
+    value=${line#Latest livecheck version:}
+    value=${value#"${value%%[![:space:]]*}"}
+
+    printf 'DEBUG single: package=<%q> value=<%q> multi=%q skip=%q line=<%q>\n' \
+        "$package" "$value" "$multi" "$skip" "$line"
+
+    version["$package"]="$value"
+    continue
+	fi
+	# Latest version: single version
     if [[ $line == 'Latest livecheck version:'* ]]; then
 
         value=${line#Latest livecheck version:}
@@ -93,3 +120,6 @@ for package in "${!version_arm[@]}"; do
         "leeronr/dedeprecated/$package"
 
 done
+
+printf 'DEBUG final shell: bash=%q version=%q flags=%q\n' \
+    "$BASH" "$BASH_VERSION" "$-"
