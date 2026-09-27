@@ -8,19 +8,13 @@ package=
 skip=0
 multi=0
 
-brew_output=$(brew bump --tap leeronr/dedeprecated)
+declare -A version
+declare -A version_arm
+declare -A version_intel
 
-while IFS= read -r line; do
-    if [[ $line == '==> '* ]]; then
-        printf 'PACKAGE MATCH: <%s>\n' "$line"
-    elif [[ $line == 'Latest livecheck version: arm:'* ]]; then
-        printf 'ARM MATCH: <%s>\n' "$line"
-    elif [[ $line == *'intel:'* ]]; then
-        printf 'INTEL MATCH: <%s>\n' "$line"
-    elif [[ $line == 'Latest livecheck version:'* ]]; then
-        printf 'SINGLE MATCH: <%s>\n' "$line"
-    fi
-done <<< "$brew_output"
+package=
+skip=0
+multi=0
 
 while IFS= read -r line; do
 
@@ -41,10 +35,9 @@ while IFS= read -r line; do
         continue
     fi
 
-    (( skip )) && continue
-
-	# Don't try to populate an array with an empty key.
-  	[[ -z $package ]] && continue
+    if (( skip )); then
+        continue
+    fi
 
     # Latest version: ARM/Intel
     if [[ $line == 'Latest livecheck version: arm:'* ]]; then
@@ -77,7 +70,7 @@ while IFS= read -r line; do
         continue
     fi
 
-done <<< "$brew_output"
+done < <(brew bump --tap leeronr/dedeprecated)
 
 for package in "${!version[@]}"; do
 
