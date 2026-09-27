@@ -37,10 +37,8 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          echo ls -a .github
-          ls -a .github
-          echo ls -a $GITHUB_WORKSPACE/.github
-          ls -a $GITHUB_WORKSPACE/.github
+          echo ls -a .github/scripts
+          ls -a .github/scripts
           /opt/homebrew/bin/bash "$GITHUB_WORKSPACE/.github/scripts/bump-casks.sh"
 
       - name: Enable auto-merge
