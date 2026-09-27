@@ -14,83 +14,151 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-
       - name: Configure Git
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
-      - name: Fresh clone tap
+      - name: Tap repository
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          brew untap leeronr/dedeprecated 2>/dev/null || true
-
-          brew tap leeronr/dedeprecated \
-            https://github.com/leeronr/homebrew-dedeprecated.git
-
-          TAP_PATH="$(brew --repository leeronr/dedeprecated)"
-
-          echo "=== Tap path ==="
-          echo "$TAP_PATH"
-
-          echo "=== Git remotes ==="
-          git -C "$TAP_PATH" remote -v
-
-          echo "=== Push URL ==="
-          git -C "$TAP_PATH" remote get-url --push origin
-
-          echo "=== Homebrew tap remote ==="
-          brew tap-info leeronr/dedeprecated
-
-          EXPECTED="https://github.com/leeronr/homebrew-dedeprecated.git"
-          ACTUAL="$(git -C "$TAP_PATH" remote get-url --push origin)"
-
-          if [[ "$ACTUAL" != "$EXPECTED" ]]; then
-            echo "::error::Unexpected push URL: $ACTUAL"
-            exit 1
-          fi
+          brew tap leeronr/dedeprecated
 
       - name: Bump casks
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-          HOMEBREW_NO_INSTALL_FROM_API: "1"
         run: |
-          brew bump \
-            --no-fork \
-            --open-pr \
-            --casks \
-            --tap=leeronr/dedeprecated
+          declare -A version
+          declare -A version_arm
+          declare -A version_intel
 
-      - name: Auto-merge bump PRs
+          package=
+          skip=0
+          multi=0
+
+          while IFS= read -r line; do
+
+              # New package
+              if [[ $line == '==> '* ]]; then
+
+                  # "==> foo is up to date!"
+                  if [[ $line == *' is up to date!' ]]; then
+                      package=
+                      skip=1
+                      multi=0
+                      continue
+                  fi
+
+                  package=${line#==> }
+                  skip=0
+                  multi=0
+                  continue
+              fi
+
+              (( skip )) && continue
+
+              # Latest version: ARM/Intel
+              if [[ $line == 'Latest livecheck version: arm:'* ]]; then
+                  multi=1
+
+                  value=${line#*arm:}
+                  value=${value#"${value%%[![:space:]]*}"}
+
+                  version_arm["$package"]="$value"
+                  continue
+              fi
+
+              # Intel continuation
+              if (( multi )) && [[ $line == *'intel:'* ]]; then
+
+                  value=${line#*intel:}
+                  value=${value#"${value%%[![:space:]]*}"}
+
+                  version_intel["$package"]="$value"
+                  continue
+              fi
+
+              # Latest version: single version
+              if [[ $line == 'Latest livecheck version:'* ]]; then
+
+                  value=${line#Latest livecheck version:}
+                  value=${value#"${value%%[![:space:]]*}"}
+
+                  version["$package"]="$value"
+                  continue
+              fi
+
+          done < <(brew bump --tap leeronr/dedeprecated)
+
+          echo "=== Single-version casks ==="
+
+          for package in "${!version[@]}"; do
+
+              echo "Bumping $package -> ${version[$package]}"
+
+              brew bump-cask-pr \
+                  --no-fork \
+                  --version "${version[$package]}" \
+                  "leeronr/dedeprecated/$package"
+
+          done
+
+          echo "=== Multi-architecture casks ==="
+
+          for package in "${!version_arm[@]}"; do
+
+              echo "Bumping $package:"
+              echo "  arm:   ${version_arm[$package]}"
+              echo "  intel: ${version_intel[$package]}"
+
+              brew bump-cask-pr \
+                  --no-fork \
+                  --no-browse \
+                  --version-arm "${version_arm[$package]}" \
+                  --version-intel "${version_intel[$package]}" \
+                  "leeronr/dedeprecated/$package"
+
+          done
+
+      - name: Enable auto-merge
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          prs="$(gh pr list \
+          echo "Looking for bump PRs..."
+
+          gh pr list \
             --repo "${{ github.repository }}" \
             --state open \
-            --author "app/github-actions" \
-            --json number,title,body \
-            --jq '.[] | select(.body | contains("Created by `brew bump`")) | .number')"
+            --json number,title,url \
+            --jq '.[] | "\(.number)\t\(.title)\t\(.url)"'
+
+          prs="$(
+            gh pr list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --json number,title \
+              --jq '.[] | select(.title | startswith("Bump ")) | .number'
+          )"
 
           if [[ -z "$prs" ]]; then
-            echo "No new bump PRs found."
-            exit 0
+              echo "No open bump PRs found."
+              exit 0
           fi
 
           while IFS= read -r pr; do
-            [[ -z "$pr" ]] && continue
+              [[ -z "$pr" ]] && continue
 
-            echo "Enabling auto-merge for PR #$pr"
+              echo "Enabling auto-merge for PR #$pr"
 
-            gh pr merge "$pr" \
-              --repo "${{ github.repository }}" \
-              --auto \
-              --squash \
-              --delete-branch
+              gh pr merge "$pr" \
+                  --repo "${{ github.repository }}" \
+                  --auto \
+                  --squash \
+                  --delete-branch
+
           done <<< "$prs"
+
 # name: Bump Casks
 
 # on:
