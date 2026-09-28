@@ -5,7 +5,7 @@ cask "fiji" do
   sha256 arm:   "e66a395160b5affc0c2328accb4782918703918c4b7391a79cfc7300299fea72",
          intel: "b82046df1ac8d270c8ff5b358c7d58e5eace9bbfca836a4ce681459e5fc543b6"
 
-  url "https://downloads.micron.ox.ac.uk/fiji_update/mirrors/fiji-latest/fiji-latest-macos-#{arch}-jdk.zip"
+  url "https://downloads.micron.ox.ac.uk/fiji_update/mirrors/fiji-latest/fiji-latest-macos#{arch}-jdk.zip"
   name "Fiji"
   desc "Open-source image processing package"
   homepage "https://fiji.sc/"
