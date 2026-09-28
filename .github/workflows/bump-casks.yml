@@ -40,10 +40,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          echo "Looking for bump PRs..."
+          echo "Looking for open PRs authored by leeronr..."
 
           gh pr list \
             --repo "${{ github.repository }}" \
+            --author leeronr \
             --state open \
             --json number,title,url \
             --jq '.[] | "\(.number)\t\(.title)\t\(.url)"'
@@ -52,8 +53,9 @@ jobs:
             gh pr list \
               --repo "${{ github.repository }}" \
               --state open \
+              --author leeronr \
               --json number,title \
-              --jq '.[] | select(.title | startswith("Bump ")) | .number'
+              --jq '.[].number'
           )"
 
           if [[ -z "$prs" ]]; then

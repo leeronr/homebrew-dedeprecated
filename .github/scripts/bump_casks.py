@@ -119,7 +119,6 @@ def main():
             "--no-fork",
             "--version",
             version,
-            "--dry-run",
             f"{TAP}/{package}",
         ]
 
@@ -137,7 +136,6 @@ def main():
             arm_version,
             "--version-intel",
             intel_version,
-            "--dry-run",
             f"{TAP}/{package}",
         ]
 
