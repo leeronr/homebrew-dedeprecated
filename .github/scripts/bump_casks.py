@@ -29,6 +29,12 @@ def run(command):
 
 
 def parse_bump_output(output):
+    for line_number, raw_line in enumerate(output.splitlines(), 1):
+        line = raw_line.rstrip()
+
+    if "Latest livecheck version" in line or line.startswith("==>"):
+        print(f"PARSE {line_number}: {line!r}")
+    
     single = {}
     arm = {}
     intel = {}
@@ -88,7 +94,13 @@ def parse_bump_output(output):
 def main():
     output = run(["brew", "bump", "--tap", TAP])
     
-    print("OUTPUT\n", output)
+    print("=== OUTPUT DEBUG ===")
+    print(f"length: {len(output)}")
+    print(f"repr first 200: {output[:200]!r}")
+    print(f"first lines:")
+    for i, line in enumerate(output.splitlines()[:10], 1):
+        print(f"{i}: {line!r}")
+    print("=== END OUTPUT DEBUG ===")
 
     print("\n=== Parsed versions ===")
 
