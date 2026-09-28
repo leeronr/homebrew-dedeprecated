@@ -30,15 +30,14 @@ jobs:
         run: |
           brew tap leeronr/dedeprecated
 
-      - name: Install Bash
-        run: brew install bash
+      - name: Install Python
+        run: brew install python
 
       - name: Bump casks
-        shell: /opt/homebrew/bin/bash {0}
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
-          /opt/homebrew/bin/bash .github/scripts/bump_casks.sh 
+          python3 .github/scripts/bump_casks.py
 
       - name: Enable auto-merge
         env:
