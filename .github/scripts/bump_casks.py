@@ -87,6 +87,8 @@ def parse_bump_output(output):
 
 def main():
     output = run(["brew", "bump", "--tap", TAP])
+    
+    print("OUTPUT\n", output)
 
     print("\n=== Parsed versions ===")
 
