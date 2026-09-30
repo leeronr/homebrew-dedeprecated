@@ -1,9 +1,9 @@
 cask "fiji" do
   arch arm: "-arm64", intel: "64"
-  version "20260718-0417"
-  
+
+  version "20260929-1417"
   sha256 :no_check
-  
+
   url "https://downloads.micron.ox.ac.uk/fiji_update/mirrors/fiji-latest/fiji-latest-macos#{arch}-jdk.zip"
   name "Fiji"
   desc "Open-source image processing package"
