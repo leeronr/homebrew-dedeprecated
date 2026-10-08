@@ -117,6 +117,7 @@ def main():
             "brew",
             "bump-cask-pr",
             "--no-fork",
+            "--no-browse",
             "--version",
             version,
             f"{TAP}/{package}",
