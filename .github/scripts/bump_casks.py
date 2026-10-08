@@ -11,6 +11,9 @@ ANSI_ESCAPE = re.compile(
     r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"
     )
 
+DEBUG = False
+
+DEBUG = True
 
 def run(command):
     print(f"$ {' '.join(command)}", flush=True)
@@ -24,6 +27,7 @@ def run(command):
 
     if result.returncode != 0:
         print(result.stdout, end="")
+        print(result.stderr, end="")
         raise RuntimeError(
             f"Command failed with exit status {result.returncode}: "
             f"{' '.join(command)}"
@@ -122,6 +126,9 @@ def main():
             version,
             f"{TAP}/{package}",
         ]
+        
+        if DEBUG:
+            command.insert(-1, "--debug")
 
         run(command)
 
@@ -139,7 +146,10 @@ def main():
             intel_version,
             f"{TAP}/{package}",
         ]
-
+        
+        if DEBUG:
+            command.insert(-1, "--debug")
+                    
         run(command)
 
 
