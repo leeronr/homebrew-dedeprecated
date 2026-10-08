@@ -13,7 +13,7 @@ ANSI_ESCAPE = re.compile(
 
 DEBUG = False
 
-DEBUG = True
+# DEBUG = True
 
 def run(command):
     print(f"$ {' '.join(command)}", flush=True)
@@ -26,9 +26,9 @@ def run(command):
     )
 
     if result.returncode != 0:
-        print(result.stdout, end="")
+        # print(result.stdout, end="")
         print(result.stderr, end="")
-        raise RuntimeError(
+        print(
             f"Command failed with exit status {result.returncode}: "
             f"{' '.join(command)}"
         )
