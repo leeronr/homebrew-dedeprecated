@@ -21,13 +21,11 @@ cask "okular" do
     regex(/href=.*?okular-release[._-]v?(\d+(?:[.-]\d+)+)[^"' >]*?[._-]#{arch}\.dmg/i)
 
     strategy :page_match do |page, regex|
-      # Find the release directory with the highest version
       release_dir = page.scan(%r{href=["']?(release[._-]v?(\d+(?:\.\d+)*))/?["' >]}i)
                         .max_by { |match| Version.new(match[1]) }
                         &.first
       next unless release_dir
 
-      # Fetch the newest release's architecture-specific build listing
       builds_page = Homebrew::Livecheck::Strategy.page_content(
         "https://cdn.kde.org/ci-builds/graphics/okular/#{release_dir}/macos-#{arch}/",
       )
