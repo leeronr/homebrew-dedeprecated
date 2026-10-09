@@ -40,7 +40,7 @@ cask "okular" do
   depends_on macos: :ventura
 
   app "okular.app"
-  command_wrapper "kate",
+  command_wrapper "okular",
                   executable: "#{appdir}/okular.app/Contents/MacOS/okular"
 
   zap trash: [
@@ -48,6 +48,5 @@ cask "okular" do
     "~/Library/Preferences/okularpartrc",
     "~/Library/Preferences/okularrc",
     "~/Library/Preferences/org.kde.okular.plist",
-    "~/Library/Saved Application State/org.kde.kate.savedState",
   ]
 end
