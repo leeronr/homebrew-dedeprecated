@@ -47,9 +47,8 @@ jobs:
             echo "Enabling auto-merge for PR #$pr"
 
             gh pr merge "$pr" \
-              --repo "${{ github.repository }}" \
-              --auto \
-              --squash \
-              --delete-branch
+                --repo "${{ github.repository }}" \
+                --squash \
+                --delete-branch
 
           done <<< "$prs"
