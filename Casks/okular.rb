@@ -13,7 +13,7 @@ cask "okular" do
 
   url "https://cdn.kde.org/ci-builds/graphics/okular/release-#{version.csv.first}/macos-#{arch}/okular-release_#{version.csv.first}-#{version.csv.second}-macos-clang-#{arch}.dmg"
   name "Okular"
-  desc "Universal document viewer"
+  desc "Document viewer and annotator"
   homepage "https://okular.kde.org/"
 
   livecheck do

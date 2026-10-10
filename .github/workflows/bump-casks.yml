@@ -36,42 +36,42 @@ jobs:
         run: |
           python3 .github/scripts/bump_casks.py
 
-      - name: Enable auto-merge
-        env:
-          GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
-        run: |
-          echo "Looking for open PRs authored by leeronr..."
+      # - name: Enable auto-merge
+      #   env:
+      #     GH_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+      #   run: |
+      #     echo "Looking for open PRs authored by leeronr..."
 
-          gh pr list \
-            --repo "${{ github.repository }}" \
-            --author leeronr \
-            --state open \
-            --json number,title,url \
-            --jq '.[] | "\(.number)\t\(.title)\t\(.url)"'
+      #     gh pr list \
+      #       --repo "${{ github.repository }}" \
+      #       --author leeronr \
+      #       --state open \
+      #       --json number,title,url \
+      #       --jq '.[] | "\(.number)\t\(.title)\t\(.url)"'
 
-          prs="$(
-            gh pr list \
-              --repo "${{ github.repository }}" \
-              --state open \
-              --author leeronr \
-              --json number,title \
-              --jq '.[].number'
-          )"
+      #     prs="$(
+      #       gh pr list \
+      #         --repo "${{ github.repository }}" \
+      #         --state open \
+      #         --author leeronr \
+      #         --json number,title \
+      #         --jq '.[].number'
+      #     )"
 
-          if [[ -z "$prs" ]]; then
-              echo "No open bump PRs found."
-              exit 0
-          fi
+      #     if [[ -z "$prs" ]]; then
+      #         echo "No open bump PRs found."
+      #         exit 0
+      #     fi
 
-          while IFS= read -r pr; do
-              [[ -z "$pr" ]] && continue
+      #     while IFS= read -r pr; do
+      #         [[ -z "$pr" ]] && continue
 
-              echo "Enabling auto-merge for PR #$pr"
+      #         echo "Enabling auto-merge for PR #$pr"
 
-              gh pr merge "$pr" \
-                  --repo "${{ github.repository }}" \
-                  --auto \
-                  --squash \
-                  --delete-branch
+      #         gh pr merge "$pr" \
+      #             --repo "${{ github.repository }}" \
+      #             --auto \
+      #             --squash \
+      #             --delete-branch
 
-          done <<< "$prs"
+      #     done <<< "$prs"
