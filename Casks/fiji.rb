@@ -1,7 +1,7 @@
 cask "fiji" do
   arch arm: "-arm64", intel: "64"
 
-  version "20261013-1517"
+  version "20261023-0117"
   sha256 :no_check
 
   url "https://downloads.micron.ox.ac.uk/fiji_update/mirrors/fiji-latest/fiji-latest-macos#{arch}-jdk.zip"
