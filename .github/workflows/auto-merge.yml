@@ -2,7 +2,7 @@ name: Auto-merge PRs
 
 on:
   schedule:
-    - cron: "5 2,14 * * *"
+    - cron: "10 2,14 * * *"
   workflow_dispatch:
 
 permissions:
