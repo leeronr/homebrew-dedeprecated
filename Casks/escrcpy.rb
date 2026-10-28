@@ -12,8 +12,7 @@ cask "escrcpy" do
     sha256 "e14dcd10247f94671083dc74f520cff4e92d045244c41b609f9346fd04b1fec5"
   end
 
-  url "https://github.com/viarotel-org/escrcpy/releases/download/v#{version}/Escrcpy-#{version}-mac-#{arch}.dmg",
-      verified: "github.com/viarotel-org/escrcpy/"
+  url "https://github.com/viarotel-org/escrcpy/releases/download/v#{version}/Escrcpy-#{version}-mac-#{arch}.dmg"
   name "Escrcpy"
   desc "Graphical interface for scrcpy to mirror and control Android devices"
   homepage "https://github.com/viarotel-org/escrcpy"
