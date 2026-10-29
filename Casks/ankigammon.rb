@@ -1,6 +1,6 @@
 cask "ankigammon" do
-  version "1.18.1"
-  sha256 "99172279d693bcf83232e13fc13b6d3e3ac4fbab7eecf24ae2ae6eca426c4b2b"
+  version "1.19.1"
+  sha256 "0b4ee5658d00dcfa44a98cd58f837d9f08fe0271e04b2248bc27053eda2ed347"
 
   url "https://github.com/Deinonychus999/AnkiGammon/releases/download/v#{version}/AnkiGammon-macOS.dmg"
   name "AnkiGammon"
