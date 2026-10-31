@@ -29,6 +29,7 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
         run: |
           brew tap leeronr/dedeprecated
+          brew trust leeronr/dedeprecated
 
       - name: Bump casks
         env:
