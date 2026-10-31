@@ -30,7 +30,7 @@ cask "blunderdb" do
   generate_completions_from_executable(
     "#{appdir}/blunderDB.app/Contents/MacOS/blunderDB-macos-#{version}",
     "completion",
-    shells:                 [:bash, :zsh, :fish],
+    shells: [:bash, :zsh, :fish],
     # shell_parameter_format: :arg,
   )
 
