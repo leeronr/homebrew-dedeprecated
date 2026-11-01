@@ -3,6 +3,10 @@ name: Auto-merge PRs
 on:
   schedule:
     - cron: "10 2,14 * * *"
+  workflow_run:
+    workflows: ["Bump Formula", "Bump Casks"]
+    types: [completed]
+    
   workflow_dispatch:
 
 permissions:
