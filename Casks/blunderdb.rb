@@ -2,8 +2,8 @@
 # (also run by the `package-manifests` job in .github/workflows/build.yml on a
 # release tag). The rendered file is what goes into a tap as Casks/blunderdb.rb.
 cask "blunderdb" do
-  version "0.51.0"
-  sha256 "29c397a440aaec5562254de478cbe2b6789d16c66e0cf1200f2859e9df300175"
+  version "0.53.0"
+  sha256 "92d0802325c266e02f79873bdc4c1f15a61af0f86409b0a78fdbd3cd5ed139e9"
 
   url "https://github.com/kevung/blunderDB/releases/download/#{version}/blunderDB-macos-#{version}.zip"
   name "blunderDB"
