@@ -1,6 +1,6 @@
 cask "ytsage@beta" do
-  version "5.6.7-beta.1"
-  sha256 "4bb4bc36f7e888c73b9ef065d60b98a7d95e9e3abeb5ff724685197b202a0be3"
+  version "5.6.9-beta.1"
+  sha256 "47ea1025115842f4107679ffe82c4b1677a422fa96ea1129a3c090b0db1cb990"
 
   url "https://github.com/oop7/YTSage/releases/download/v#{version}/YTSage-v#{version}-arm64.dmg"
   name "YTSage Beta"
