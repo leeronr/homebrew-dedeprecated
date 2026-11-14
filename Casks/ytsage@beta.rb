@@ -8,17 +8,17 @@ cask "ytsage@beta" do
   homepage "https://github.com/oop7/YTSage"
 
   livecheck do
-  url "https://github.com/oop7/YTSage"
-  regex(/^v?(\d+(?:\.\d+)+(?:-[0-9A-Za-z.-]+)?)$/i)
+    url "https://github.com/oop7/YTSage"
+    regex(/^v?(\d+(?:\.\d+)+(?:-[0-9A-Za-z.-]+)?)$/i)
 
-  strategy :github_releases do |json, regex|
-    json.filter_map do |release|
-      next if release["draft"]
+    strategy :github_releases do |json, regex|
+      json.filter_map do |release|
+        next if release["draft"]
 
-      release["tag_name"]&.[](regex, 1)
+        release["tag_name"]&.[](regex, 1)
+      end
     end
   end
-end
 
   conflicts_with cask: "ytsage"
   depends_on arch: :arm64
