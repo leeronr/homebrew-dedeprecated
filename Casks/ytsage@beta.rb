@@ -24,5 +24,5 @@ cask "ytsage@beta" do
   depends_on arch: :arm64
   depends_on :macos
 
-  app "YTSage.app"
+  app "YTSage-v#{version}.app", target: "YTSage.app"
 end
