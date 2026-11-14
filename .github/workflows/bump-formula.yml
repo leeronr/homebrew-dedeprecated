@@ -3,7 +3,7 @@ name: Bump Formula
 on:
   # Schedule to run at 4AM and 4PM PST everyday
   schedule:
-    - cron: "0 2,8,14,20 * * *"
+    - cron: "0 0,6,12,18 * * *"
   push:
     paths:
       - ".github/workflows/bump-formula.yml"
