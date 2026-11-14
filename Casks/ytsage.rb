@@ -13,7 +13,7 @@ cask "ytsage" do
   end
 
   conflicts_with cask: "ytsage@beta"
-  depends_on arch: :arm
+  depends_on arch: :arm64
   depends_on :macos
 
   app "YTSage.app"
