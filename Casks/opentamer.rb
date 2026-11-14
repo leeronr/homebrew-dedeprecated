@@ -1,6 +1,6 @@
 cask "opentamer" do
-  version "1.4.1"
-  sha256 "ef64b259e4c881ffddb4922f1311bb22ad394374151469e1f9aaaf0658a1b59c"
+  version "1.5.0"
+  sha256 "38f5c37c46fe43dad58fab80f44b29f869c86f0971d0afaafd42969930027665"
 
   url "https://github.com/Digital-Shane/OpenTamer/releases/download/v#{version}/OpenTamer-#{version}-macos-arm64.zip"
   name "OpenTamer"
