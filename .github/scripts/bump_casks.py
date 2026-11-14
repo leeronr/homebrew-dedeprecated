@@ -87,7 +87,9 @@ def parse_bump_output(output):
             line,
         )
         if match:
-            single[package] = match.group(1).strip()
+            version = match.group(1).strip()
+            if not version == "unable to get versions":
+                single[package] = version
             continue
 
     return single, arm, intel
