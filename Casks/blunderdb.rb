@@ -1,6 +1,3 @@
-# Template — 0.47.1 and 159b3ce324d296ad44704fed0627e325e4002ecff41f6e4e855caf610031e5cf are substituted by scripts/homebrew-render.sh
-# (also run by the `package-manifests` job in .github/workflows/build.yml on a
-# release tag). The rendered file is what goes into a tap as Casks/blunderdb.rb.
 cask "blunderdb" do
   version "0.57.0"
   sha256 "f5fd1b88c3c14f91b3138547d8aad34d613ed8b3e092a361f9cda7369f0c0cbc"
