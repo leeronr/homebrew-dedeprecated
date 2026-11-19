@@ -1,14 +1,14 @@
 cask "okular" do
   arch arm: "arm64", intel: "x86_64"
 
-  sha256 arm:   "1f35e0473c366dfa8932d88416aff3beaa684e1561db9b598f7d1de856288cc0",
-         intel: "5c9dd6cf103c41f47453973cffee21adde90ef3b8a39fae8e25dc17ba7a95608"
+  sha256 arm:   "dd2dfb84457909fb663a066a0431242b155402d7e2817a209389173b9324d117",
+         intel: "4f9011e6665b2eaf472d96b7d270227a8b732110caad6e8b0741880ca820308a"
 
   on_arm do
-    version "26.12,8286"
+    version "26.12,8321"
   end
   on_intel do
-    version "26.12,8286"
+    version "26.12,8321"
   end
 
   url "https://cdn.kde.org/ci-builds/graphics/okular/release-#{version.csv.first}/macos-#{arch}/okular-release_#{version.csv.first}-#{version.csv.second}-macos-clang-#{arch}.dmg"
