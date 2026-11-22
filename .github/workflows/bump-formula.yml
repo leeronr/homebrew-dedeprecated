@@ -37,4 +37,4 @@ jobs:
           tap: leeronr/dedeprecated
           # Bump only these formulae if outdated
           # formula: fop-rs, lsusb-plus
-          livecheck: true
+          # livecheck: true
