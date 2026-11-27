@@ -1,6 +1,6 @@
 cask "blunderdb" do
-  version "0.59.0"
-  sha256 "1d9582188d8e3a82446c279adbd84708f72ecbc2f0882ea1d6792763a8f35c33"
+  version "0.60.0"
+  sha256 "e36b84b3b5cd5fe8201341b739ede2ec6c8399f820c192dcc67796426a215c08"
 
   url "https://github.com/kevung/blunderDB/releases/download/#{version}/blunderDB-macos-#{version}.zip"
   name "blunderDB"
